@@ -1,42 +1,49 @@
 import hashlib
 
-import  pandas  as pd
+import pandas  as pd
 from pandas import ExcelWriter
 from pandas import ExcelFile
 
+
 # md5转换
 def getStrAsMD5(parmStr):
-    if isinstance(parmStr,str):
+    if isinstance(parmStr, str):
         # 转utf-8
-        parmStr=parmStr.encode("utf-8")
+        parmStr = parmStr.encode("utf-8")
     m = hashlib.md5()
     m.update(parmStr)
     return m.hexdigest()
 
-df=pd.read_excel('test.xlsx')
-ids=df['身份证件'].values
-names=df['户名'].values
+
+df = pd.read_excel('test.xlsx',formatting_info = True)
+# id
+id = df['身份证件']
+# name
+names = df['户名']
 
 # 身份证号, 1/2代处理
-IdReg='(^\d{8}(0\d|10|11|12)([0-2]\d|30|31)\d{3}$)|(^\d{6}(18|19|20)\d{2}(0[1-9]|10|11|12)([0-2]\d|30|31)\d{3}(\d|X|x)$)'
-ids= df['身份证件'].replace(IdReg,df['身份证件'].apply(lambda x:x[0:6]+getStrAsMD5(x)), regex=True)
-print("值:\n{0}".format(ids))
+IdReg = '(^\d{8}(0\d|10|11|12)([0-2]\d|30|31)\d{3}$)|(^\d{6}(18|19|20)\d{2}(0[1-9]|10|11|12)([0-2]\d|30|31)\d{3}(\d|X|x)$)'
+id.replace(IdReg, id.apply(lambda x: x[0:6] + getStrAsMD5(x)), inplace=True, regex=True)
 
-#passport 处理
-preg='(^[EeKkGgDdSsPpHh]\d{8}$)|(^(([Ee][a-fA-F])|([DdSsPp][Ee])|([Kk][Jj])|([Mm][Aa])|(1[45]))\d{7}$)'
-ids= df['身份证件'].replace(preg,df['身份证件'].apply(lambda x:x[0:6]+getStrAsMD5(x)), regex=True)
-print("值:\n{0}".format(ids))
+# passport 处理
+preg = '(^[EeKkGgDdSsPpHh]\d{8}$)|(^(([Ee][a-fA-F])|([DdSsPp][Ee])|([Kk][Jj])|([Mm][Aa])|(1[45]))\d{7}$)'
+id.replace(preg, id.apply(lambda x: x[0:6] + getStrAsMD5(x)), inplace=True, regex=True)
 
 # 军官证处理
 jreg = '(^[\u4E00-\u9FA5](字第)([0-9a-zA-Z]{4,8})(号?)$)'
-ids= df['身份证件'].replace(jreg,df['身份证件'].apply(lambda x:x[0:2]+getStrAsMD5(x)), regex=True)
-print("值:\n{0}".format(ids))
+id.replace(jreg, id.apply(lambda x: x[0:2] + getStrAsMD5(x)), inplace=True, regex=True)
 
-#警官证处理
+# 警官证处理
 policereg = '(^[\u4E00-\u9FA5]([0-9a-zA-Z]{7})$)'
-ids= df['身份证件'].replace(policereg,df['身份证件'].apply(lambda x:x[0]+getStrAsMD5(x)), regex=True)
-print("值:\n{0}".format(ids))
+id.replace(policereg, id.apply(lambda x: x[0] + getStrAsMD5(x)), inplace=True, regex=True)
 
-#户名处理
-names= df['户名'].replace('^[\u4E00-\u9FA5]{2,3}$',df['户名'].str[-1], regex=True)
-print("值:\n{0}".format(names))
+print("值:\n{0}".format(id.values))
+# 户名处理
+names.replace('^[\u4E00-\u9FA5]{2,3}$', names.str[-1], inplace=True, regex=True)
+
+# print("值:\n{0}".format(df['户名'].values))
+
+writer = pd.ExcelWriter('./testresult.xlsx')
+df.to_excel(writer,index=False)
+writer.save()#文件保存
+writer.close()#文件关闭
