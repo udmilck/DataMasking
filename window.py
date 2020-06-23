@@ -1,21 +1,20 @@
 # -*- coding: utf-8 -*-
 import PySimpleGUI as sg
+import main
 
-# Create some widgets
-# text = sg.Text("待处理文档路径")
-# text_entry = sg.FilesBrowse()
-layout= [[sg.FileBrowse('打开图片',key='filebrowser',target='image_shape'),sg.InputText('',key='image_shape',disabled=True)]]
-# ok_btn = sg.Button('OK')
-# cancel_btn = sg.Button('Cancel')
-# layout = [[text, text_entry],
-#           [ok_btn, cancel_btn]]
+layout= [[sg.Text('原始目录', size=(15, 1), auto_size_text=False, justification='right'),
+        sg.InputText(key='-From Folder-'), sg.FolderBrowse()],
+        [sg.Text('转换后目录', size=(15, 1), auto_size_text=False, justification='right'),
+        sg.InputText(key='-To Folder-'), sg.FolderBrowse()],[sg.Btn('确定', key='_CONFIRM_'), sg.Cancel()]]
 
 # Create the Window
-window = sg.Window('Hello PySimpleGUI', layout)
+window = sg.Window('数据处理', layout)
 
 # Create the event loop
 while True:
     event, values = window.read()
+    if event == '_CONFIRM_':
+        main.editAll(str(values['-From Folder-']),str(values['-To Folder-']))
     if event in (None, 'Cancel'):
         # User closed the Window or hit the Cancel button
         break
