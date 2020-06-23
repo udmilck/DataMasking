@@ -14,7 +14,11 @@ window = sg.Window('数据处理', layout)
 while True:
     event, values = window.read()
     if event == '_CONFIRM_':
-        main.editAll(str(values['-From Folder-']),str(values['-To Folder-']))
+        try:
+            main.editAll(str(values['-From Folder-']),str(values['-To Folder-']))
+            sg.popup('文档转换成功')
+        except:
+            sg.popup('转换出错')
     if event in (None, 'Cancel'):
         # User closed the Window or hit the Cancel button
         break
