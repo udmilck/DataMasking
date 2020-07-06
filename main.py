@@ -1,24 +1,9 @@
-
 from hashlib import md5
-
-import openpyxl
 
 from pandas import read_excel
 from pandas import isnull
-from pandas import ExcelWriter
 
 from os import listdir
-from os import makedirs
-from os import removedirs
-import os.path as osp
-
-def mkdir(path):
-    folder = osp.exists(path)
-    if not folder:
-        makedirs(path)
-        print('--- folder mk ---')
-    else:
-        print('--- folder exists ---')
 
 def getFileList(path):
     return listdir(path)
@@ -29,7 +14,7 @@ def getStrAsMD5(parmStr):
         # 转utf-8
         parmStr = parmStr.encode("utf-8")
     m = md5()
-    m.update(parmStr)
+    m.update(parmStr.upper())
     return m.hexdigest()
 
 # data masking
@@ -37,9 +22,9 @@ def editExl(path,topath, name):
     df = read_excel(path+ '/' + name, formatting_info=True)
 
 
-    if '身份证件' in df.columns:
+    if '实际控制人证件代码' in df.columns:
         # id
-        id = df['身份证件']
+        id = df['实际控制人证件代码']
 
         # 身份证号, 1/2代处理
         IdReg = '(^\d{8}(0\d|10|11|12)([0-2]\d|30|31)\d{3}$)|(^\d{6}(18|19|20)\d{2}(0[1-9]|10|11|12)([0-2]\d|30|31)\d{3}(\d|X|x)$)'
@@ -57,19 +42,13 @@ def editExl(path,topath, name):
         policereg = '(^[\u4E00-\u9FA5]([0-9a-zA-Z]{7})$)'
         id.replace(policereg, id.apply(lambda x: x if isnull(x) else x[0] + getStrAsMD5(x)), inplace=True, regex=True)
 
-    print("值:\n{0}".format(id.values))
-
-    if '户名' in df.columns:
+    if '客户名称' in df.columns:
         # name
-        names = df['户名']
+        names = df['客户名称']
         # 户名处理
         names.replace('^[\u4E00-\u9FA5]{2,3}$', names.str[-1], inplace=True, regex=True)
 
-
-    writer = ExcelWriter(topath + "/" + name)
-    df.to_excel(writer,index=False)
-    writer.save()
-    writer.close()
+    df.to_csv(topath + "/"+name.split('.')[0] + ".csv",header=False,line_terminator='\r',sep='|',index=0)
 
 def editAll(fromPath,toPath):
     originPath = fromPath
